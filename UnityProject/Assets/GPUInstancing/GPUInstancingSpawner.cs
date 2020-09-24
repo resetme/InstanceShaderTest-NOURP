@@ -82,6 +82,8 @@ public class GPUInstancingSpawner : MonoBehaviour
             }
         }
         
+        //break your batch here for more than 1023 instances
+        //remember instance amount depends of target device and gpu.
         for (int i = 0; i < amount; i++)
         {
             Graphics.DrawMesh(meshToSpawn, _matrices[i], _sharedMaterial, 0, null, 0, _block[i]);
