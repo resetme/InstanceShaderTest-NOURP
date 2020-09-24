@@ -141,9 +141,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45fb9f223aca6974280d60a86c945947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 1000
+  amount: 1023
   meshToSpawn: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  gpuInstancedShader: {fileID: 45, guid: 0000000000000000f000000000000000, type: 0}
+  gpuInstancedShader: {fileID: 4800000, guid: 7a686fb9fe48d82468acf9acd7eccb6a, type: 3}
 --- !u!4 &381761497
 Transform:
   m_ObjectHideFlags: 0
