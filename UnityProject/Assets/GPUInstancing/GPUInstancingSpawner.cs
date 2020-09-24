@@ -71,6 +71,9 @@ public class GPUInstancingSpawner : MonoBehaviour
                 position.x += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
                 position.y += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
                 position.z += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
+                
+                //Rotation Column 2 and 1
+                //Scale Column 0 1 2 magnitude
             
                 Matrix4x4 matrix =  Matrix4x4.identity;
                 matrix.SetTRS(position, Quaternion.Euler(Vector3.zero), Vector3.one);
