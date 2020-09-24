@@ -5,7 +5,6 @@ using UnityEngine;
 public class GPUInstancingSpawner : MonoBehaviour
 {
     #region Public
-
     [Header("Spawn Settings")] 
     [Range(0,1023)]
     public int amount;
@@ -17,14 +16,21 @@ public class GPUInstancingSpawner : MonoBehaviour
     
     [Header("Render")]
     public Shader gpuInstancedShader;
+    
+    [Header("Type")]
+    public INSTANCETYPE _instancetype;
+    
+    public enum INSTANCETYPE
+    {
+        DrawMesh, MeshInstanced
+    }
 
     #endregion
     
     #region Private
-
     private Material _sharedMaterial;
     private Matrix4x4[] _matrices;
-    private MaterialPropertyBlock[] _block;
+    private MaterialPropertyBlock _block;
     private int _shader_color = Shader.PropertyToID("_Color");
     private Vector4[] _color;
     #endregion
@@ -37,7 +43,7 @@ public class GPUInstancingSpawner : MonoBehaviour
         _matrices = new Matrix4x4[amount];
         _color = new Vector4[amount];
         
-        _block = new MaterialPropertyBlock[amount];
+        _block = new MaterialPropertyBlock();
         
         for (int i = 0; i < amount; i++)
         {
@@ -54,8 +60,12 @@ public class GPUInstancingSpawner : MonoBehaviour
             float b = Random.Range(0f, 1f);
             _color[i] = new Vector4(r,g,b,1);  
             
-            _block[i] = new MaterialPropertyBlock();
-            _block[i].SetColor(_shader_color, _color[i]);
+            switch (_instancetype)
+            {
+                case INSTANCETYPE.MeshInstanced:
+                    _block.SetVectorArray(_shader_color, _color);
+                    break;
+            }
             
             _matrices[i] = matrix;
         }
@@ -63,6 +73,9 @@ public class GPUInstancingSpawner : MonoBehaviour
 
     private void Update()
     {
+        //break your batch here for more than 1023 instances
+        //remember instance amount depends of target device and gpu.
+        
         if (animate)
         {
             for (int i = 0; i < amount; i++)
@@ -81,12 +94,20 @@ public class GPUInstancingSpawner : MonoBehaviour
                 _matrices[i] = matrix;
             }
         }
-        
-        //break your batch here for more than 1023 instances
-        //remember instance amount depends of target device and gpu.
-        for (int i = 0; i < amount; i++)
+
+        switch (_instancetype)
         {
-            Graphics.DrawMesh(meshToSpawn, _matrices[i], _sharedMaterial, 0, null, 0, _block[i]);
+                case INSTANCETYPE.DrawMesh:
+                    for (int i = 0; i < amount; i++)
+                    {
+                        _block.SetColor(_shader_color, _color[i]);
+                        Graphics.DrawMesh(meshToSpawn, _matrices[i], _sharedMaterial, 0, null, 0, _block);
+                    }
+
+                    break;
+                case INSTANCETYPE.MeshInstanced:
+                    Graphics.DrawMeshInstanced(meshToSpawn,0,  _sharedMaterial, _matrices, amount, _block);
+                    break;
         }
     }
 }
