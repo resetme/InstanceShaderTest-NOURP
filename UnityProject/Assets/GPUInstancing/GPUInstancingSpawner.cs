@@ -9,6 +9,8 @@ public class GPUInstancingSpawner : MonoBehaviour
     [Header("Spawn Settings")] 
     [Range(0,1023)]
     public int amount;
+
+    public bool animate = false;
     
     [Header("Mesh")]
     public Mesh meshToSpawn;
@@ -61,6 +63,22 @@ public class GPUInstancingSpawner : MonoBehaviour
 
     private void Update()
     {
+        if (animate)
+        {
+            for (int i = 0; i < amount; i++)
+            {
+                Vector3 position = _matrices[i].GetColumn(3);
+                position.x += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
+                position.y += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
+                position.z += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
+            
+                Matrix4x4 matrix =  Matrix4x4.identity;
+                matrix.SetTRS(position, Quaternion.Euler(Vector3.zero), Vector3.one);
+            
+                _matrices[i] = matrix;
+            }
+        }
+        
         for (int i = 0; i < amount; i++)
         {
             Graphics.DrawMesh(meshToSpawn, _matrices[i], _sharedMaterial, 0, null, 0, _block[i]);
