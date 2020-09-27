@@ -6,8 +6,10 @@ public class GPUInstancingSpawner : MonoBehaviour
 {
     #region Public
     [Header("Spawn Settings")] 
-    [Range(0,1023)]
+    [Range(0,100000)]
     public int amount;
+
+    public float distanceX, distanceY, distanceZ  = 10;
 
     public bool animate = false;
     
@@ -33,24 +35,29 @@ public class GPUInstancingSpawner : MonoBehaviour
     private MaterialPropertyBlock _block;
     private int _shader_color = Shader.PropertyToID("_Color");
     private Vector4[] _color;
+    private const int MAXAMOUNT = 1023;
+    private int _currAmount = 0;
+    private Vector3[] _currPos;
     #endregion
 
     private void Start()
     {
+        _currAmount = amount;
         _sharedMaterial = new Material(gpuInstancedShader);
         _sharedMaterial.enableInstancing = true;
         
-        _matrices = new Matrix4x4[amount];
-        _color = new Vector4[amount];
+        _matrices = new Matrix4x4[_currAmount];
+        _color = new Vector4[_currAmount];
+        _currPos = new Vector3[_currAmount];
         
         _block = new MaterialPropertyBlock();
         
-        for (int i = 0; i < amount; i++)
+        for (int i = 0; i < _currAmount; i++)
         {
             Vector3 position = Vector3.zero;;
-            position.x = Random.Range(-10, 10);
-            position.y= Random.Range(-10, 10);
-            position.z = Random.Range(-10, 10);
+            position.x = Random.Range(-1f, 1f) * distanceX;
+            position.y = Random.Range(-1f, 1f) * distanceY;
+            position.z = Random.Range(-1f, 1f) * distanceZ;
             
             Matrix4x4 matrix =  Matrix4x4.identity;
             matrix.SetTRS(position, Quaternion.Euler(Vector3.zero), Vector3.one);
@@ -66,11 +73,14 @@ public class GPUInstancingSpawner : MonoBehaviour
                     _block.SetVectorArray(_shader_color, _color);
                     break;
             }
-            
+
+            _currPos[i] = position;
             _matrices[i] = matrix;
         }
     }
 
+    private int _indexGPUBath = 0;
+    
     private void Update()
     {
         //break your batch here for more than 1023 instances
@@ -78,12 +88,13 @@ public class GPUInstancingSpawner : MonoBehaviour
         
         if (animate)
         {
-            for (int i = 0; i < amount; i++)
+            for (int i = 0; i < _currAmount; i++)
             {
-                Vector3 position = _matrices[i].GetColumn(3);
-                position.x += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
-                position.y += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
-                position.z += Mathf.Sin(Time.time * Random.Range(-1f, 1f)) * 0.01f;
+                float offset = (float)i / _currAmount;
+                Vector3 position = _currPos[i];
+                position.x += Mathf.Sin(Time.time * offset) * (0.1f * offset);
+                position.y += 0;//Mathf.Cos(Time.time ) * 0.01f;
+                position.z += Mathf.Cos(Time.time * offset) * (0.1f * offset);
                 
                 //Rotation Column 2 and 1
                 //Scale Column 0 1 2 magnitude
@@ -92,7 +103,25 @@ public class GPUInstancingSpawner : MonoBehaviour
                 matrix.SetTRS(position, Quaternion.Euler(Vector3.zero), Vector3.one);
             
                 _matrices[i] = matrix;
+                _currPos[i] = position;
             }
+        }
+        
+        //Distance
+        for (int i = 0; i < _currAmount; i++)
+        {
+            Vector3 position = _currPos[i];
+            position.x *= distanceX;
+            position.y *= distanceY;
+            position.z *= distanceZ;
+                
+            //Rotation Column 2 and 1
+            //Scale Column 0 1 2 magnitude
+            
+            Matrix4x4 matrix =  Matrix4x4.identity;
+            matrix.SetTRS(position, Quaternion.Euler(Vector3.zero), Vector3.one);
+            
+            _matrices[i] = matrix;
         }
 
         switch (_instancetype)
@@ -106,6 +135,11 @@ public class GPUInstancingSpawner : MonoBehaviour
 
                     break;
                 case INSTANCETYPE.MeshInstanced:
+                    //limit of 1023
+                    //batch here
+                    if (_currAmount > MAXAMOUNT)
+                        return;
+                    
                     Graphics.DrawMeshInstanced(meshToSpawn,0,  _sharedMaterial, _matrices, amount, _block);
                     break;
         }

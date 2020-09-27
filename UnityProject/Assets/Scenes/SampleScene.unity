@@ -141,9 +141,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45fb9f223aca6974280d60a86c945947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  amount: 1023
+  amount: 26146
+  distanceX: 10
+  distanceY: 10
+  distanceZ: 10
+  animate: 0
   meshToSpawn: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   gpuInstancedShader: {fileID: 4800000, guid: 7a686fb9fe48d82468acf9acd7eccb6a, type: 3}
+  _instancetype: 0
 --- !u!4 &381761497
 Transform:
   m_ObjectHideFlags: 0
@@ -211,10 +216,10 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
+  m_OcclusionCulling: 0
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
 --- !u!4 &534669905
